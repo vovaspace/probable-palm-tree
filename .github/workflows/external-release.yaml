@@ -1,0 +1,18 @@
+on:
+  repository_dispatch:
+    types: [external_release]
+
+name: External Release
+
+jobs:
+  update_static:
+    runs-on: ubuntu-latest
+    env:
+      ASSET_DIR: /tmp/asset
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Download Asset
+        run: gh release download ${{ github.event.client_payload.tag_name }} --pattern ${{ github.event.client_payload.asset_name }}.zip --dir $ASSET_DIR
+      - name: UnZIP Asset
+        run: unzip $ASSET_DIR/${{ github.event.client_payload.asset_name }}.zip
+      - run: ls $ASSET_DIR/${{ github.event.client_payload.asset_name }}
