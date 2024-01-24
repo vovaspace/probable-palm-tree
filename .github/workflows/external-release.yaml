@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Asset Download
-        run: gh release download ${{ github.event.client_payload.tag_name }} --repo vovaspace/fluffy-carnival --pattern ${{ github.event.client_payload.asset_name }}.zip --dir $ASSET_DIR
+        run: gh release download ${{ github.event.client_payload.tag_name }} --repo ${{ github.event.client_payload.repository }} --pattern ${{ github.event.client_payload.asset_name }}.zip --dir $ASSET_DIR
       - name: Asset UnZIP
-        run: unzip $ASSET_DIR/${{ github.event.client_payload.asset_name }}.zip
+        run: unzip $ASSET_DIR/${{ github.event.client_payload.asset_name }}.zip -d $ASSET_DIR
       - run: ls $ASSET_DIR/${{ github.event.client_payload.asset_name }}
