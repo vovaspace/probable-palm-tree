@@ -10,10 +10,27 @@ jobs:
     env:
       ASSET_DIR: /tmp/asset
       GH_TOKEN: ${{ github.token }}
+
     steps:
       - uses: actions/checkout@v2
       - name: Asset Download
         run: gh release download ${{ github.event.client_payload.tag_name }} --repo ${{ github.event.client_payload.repository }} --pattern ${{ github.event.client_payload.asset_name }}.zip --dir $ASSET_DIR
-      - name: Asset UnZIP
-        run: unzip $ASSET_DIR/${{ github.event.client_payload.asset_name }}.zip -d $ASSET_DIR
-      - run: ls $ASSET_DIR/${{ github.event.client_payload.asset_name }}
+      - name: Move Static
+        env:
+          START_POINTER: "# GENERATED RESOURCES START"
+          END_POINTER: "# GENERATED RESOURCES END"
+          RESOURCES_FILE: n.make
+          TARGET_DIR: source/build
+        run: |
+          unzip $ASSET_DIR/${{ github.event.client_payload.asset_name }}.zip -d $ASSET_DIR
+          rm -rf $TARGET_DIR
+          mkdir $TARGET_DIR
+          mv -vf $ASSET_DIR/${{ github.event.client_payload.asset_name }}/* $TARGET_DIR
+
+          NEW_RESOURCES=$(find $TARGET_DIR -type f | grep -v '.map' | perl -e 'while (<>) {chomp; print "$_ $_\n";}' | sort)
+
+          perl -0777 -pi -e "s/$START_POINTER.*$END_POINTER/$START_POINTER
+          RESOURCE(
+          $(echo "${NEW_RESOURCES[*]}" | sed 's/\//\\\//g')
+          )
+          $END_POINTER/s" $RESOURCES_FILE
