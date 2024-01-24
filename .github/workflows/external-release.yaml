@@ -11,8 +11,9 @@ jobs:
       ASSET_DIR: /tmp/asset
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Download Asset
+      - uses: actions/checkout@v2
+      - name: Asset Download
         run: gh release download ${{ github.event.client_payload.tag_name }} --pattern ${{ github.event.client_payload.asset_name }}.zip --dir $ASSET_DIR
-      - name: UnZIP Asset
+      - name: Asset UnZIP
         run: unzip $ASSET_DIR/${{ github.event.client_payload.asset_name }}.zip
       - run: ls $ASSET_DIR/${{ github.event.client_payload.asset_name }}
