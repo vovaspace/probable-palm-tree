@@ -7,10 +7,12 @@ name: External Release
 jobs:
   update_static:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     env:
       ASSET_DIR: /tmp/asset
       GH_TOKEN: ${{ github.token }}
-
     steps:
       - uses: actions/checkout@v2
       - name: Asset Download
@@ -34,3 +36,13 @@ jobs:
           $(echo "${NEW_RESOURCES[*]}" | sed 's/\//\\\//g')
           )
           $END_POINTER/s" $RESOURCES_FILE
+      - name: Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "build: refresh"
+          branch: static-refresh-${{ github.event.client_payload.tag_name }}
+          title: "build: refresh"
+          body: |
+            Static Refresh.
+          delete-branch: true
