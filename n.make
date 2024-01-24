@@ -2,8 +2,7 @@ LIBRARY()
 
 # GENERATED RESOURCES START
 RESOURCE(
-source/build/initial.txt source/build/initial.txt
-source/build/internal/internal.txt source/build/internal/internal.txt
+source/build/content.txt source/build/content.txt
 )
 # GENERATED RESOURCES END
 
