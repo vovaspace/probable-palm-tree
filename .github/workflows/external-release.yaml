@@ -30,7 +30,7 @@ jobs:
           mkdir $TARGET_DIR
           mv -vf $ASSET_DIR/${{ github.event.client_payload.asset_name }}/* $TARGET_DIR
 
-          NEW_RESOURCES=$(find $TARGET_DIR -type f | grep -v '.map' | perl -e 'while (<>) {chomp; print "$_ $_\n";}' | sort)
+          NEW_RESOURCES=$(find $TARGET_DIR -type f | grep -v '.map' | sort)
           INDENTATION=$(grep -e "$START_POINTER" $RESOURCES_FILE | perl -lane 's/^(\s+)(.*)+$/$1/e; print')
 
           perl -0777 -pi -e "s/\s+$START_POINTER.*$END_POINTER/
