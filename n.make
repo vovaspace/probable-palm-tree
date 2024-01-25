@@ -1,11 +1,12 @@
 LIBRARY()
 
-# GENERATED RESOURCES START
-RESOURCE(
-source/build/content.txt source/build/content.txt
-source/build/content_another.txt source/build/content_another.txt
-)
-# GENERATED RESOURCES END
+IF (NOT CONDITION)
+    # GENERATED RESOURCES START
+    RESOURCE(
+        stub stub
+    )
+    # GENERATED RESOURCES END
+ENDIF()
 
 RESOURCE(
     stub stub

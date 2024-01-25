@@ -30,12 +30,14 @@ jobs:
           mv -vf $ASSET_DIR/${{ github.event.client_payload.asset_name }}/* $TARGET_DIR
 
           NEW_RESOURCES=$(find $TARGET_DIR -type f | grep -v '.map' | perl -e 'while (<>) {chomp; print "$_ $_\n";}' | sort)
+          INDENTATION=$(grep -e "$START_POINTER" $RESOURCES_FILE | perl -lane 's/^(\s+)(.*)+$/$1/e; print')
 
-          perl -0777 -pi -e "s/$START_POINTER.*$END_POINTER/$START_POINTER
-          RESOURCE(
-          $(echo "${NEW_RESOURCES[*]}" | sed 's/\//\\\//g')
-          )
-          $END_POINTER/s" $RESOURCES_FILE
+          perl -0777 -pi -e "s/\s+$START_POINTER.*$END_POINTER/
+          $INDENTATION$START_POINTER
+          ${INDENTATION}RESOURCE(
+          $(echo "$NEW_RESOURCES" | perl -e "while (<>) {chomp; print \"$INDENTATION    \$_ \$_\\n\";}" | sed -E 's/\//\\\//g')
+          $INDENTATION)
+          $INDENTATION$END_POINTER/s" $RESOURCES_FILE
       - name: Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
