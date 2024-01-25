@@ -12,10 +12,11 @@ jobs:
       pull-requests: write
     env:
       ASSET_DIR: /tmp/asset
-      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - name: Asset Download
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: gh release download ${{ github.event.client_payload.tag_name }} --repo ${{ github.event.client_payload.repository }} --pattern ${{ github.event.client_payload.asset_name }}.zip --dir $ASSET_DIR
       - name: Move Static
         env:
