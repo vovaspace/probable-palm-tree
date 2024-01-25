@@ -1,6 +1,19 @@
 on:
   repository_dispatch:
     types: [external_release]
+  workflow_dispatch:
+    inputs:
+      asset_name:
+        description: 'Release asset name'
+        required: true
+        default: build
+      repository:
+        description: 'Source repository'
+        required: true
+        default: vovaspace/fluffy-carnival
+      tag_name:
+        description: 'Release tag'
+        required: true
 
 name: External Release
 
@@ -12,12 +25,15 @@ jobs:
       pull-requests: write
     env:
       ASSET_DIR: /tmp/asset
+      ASSET_NAME: ${{ github.event.inputs && github.event.inputs.asset_name || github.event.client_payload.asset_name }}
+      REPOSITORY: ${{ github.event.inputs && github.event.inputs.repository || github.event.client_payload.repository }}
+      TAG_NAME: ${{ github.event.inputs && github.event.inputs.tag_name || github.event.client_payload.tag_name }}
     steps:
       - uses: actions/checkout@v4
       - name: Asset Download
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download ${{ github.event.client_payload.tag_name }} --repo ${{ github.event.client_payload.repository }} --pattern ${{ github.event.client_payload.asset_name }}.zip --dir $ASSET_DIR
+        run: gh release download $TAG_NAME --repo $REPOSITORY --pattern $ASSET_NAME.zip --dir $ASSET_DIR
       - name: Move Static
         env:
           START_POINTER: "# GENERATED RESOURCES START"
@@ -25,10 +41,10 @@ jobs:
           RESOURCES_FILE: n.make
           TARGET_DIR: source/build
         run: |
-          unzip $ASSET_DIR/${{ github.event.client_payload.asset_name }}.zip -d $ASSET_DIR
+          unzip $ASSET_DIR/$ASSET_NAME.zip -d $ASSET_DIR
           rm -rf $TARGET_DIR
           mkdir $TARGET_DIR
-          mv -vf $ASSET_DIR/${{ github.event.client_payload.asset_name }}/* $TARGET_DIR
+          mv -vf $ASSET_DIR/$ASSET_NAME/* $TARGET_DIR
 
           NEW_RESOURCES=$(find $TARGET_DIR -type f | grep -v '.map' | sort)
           INDENTATION=$(grep -e "$START_POINTER" $RESOURCES_FILE | perl -lane 's/^(\s+)(.*)+$/$1/e; print')
@@ -43,9 +59,9 @@ jobs:
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "build: refresh"
-          branch: static-refresh-${{ github.event.client_payload.tag_name }}
-          title: "build: refresh"
+          commit-message: "build: refresh (${{ env.TAG_NAME }})"
+          branch: static-refresh-${{ env.TAG_NAME }}
+          title: "build: refresh (${{ env.TAG_NAME }})"
           body: |
             Static Refresh.
           delete-branch: true
